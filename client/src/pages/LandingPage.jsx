@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { FaChartLine, FaShieldAlt, FaChartPie, FaRobot, FaArrowRight } from 'react-icons/fa';
@@ -19,6 +19,7 @@ import "slick-carousel/slick/slick-theme.css";
 
 // Import financial animation
 import financialAnimation from '../assets/financial-animation.json';
+import { Link } from 'react-router-dom';
 
 // Sample data for charts
 const chartData = [
@@ -164,7 +165,9 @@ const NavBar = () => {
         <NavLink text="Pricing" />
       </div>
       <div className="flex space-x-4">
-        <button className="px-4 py-2 rounded-md text-gray-800 hover:text-blue-600 transition duration-300">Login</button>
+        <Link to="/login">
+          <button className="px-4 py-2 rounded-md text-gray-800 hover:text-blue-600 transition duration-300">Login</button>
+        </Link>
         <button className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition duration-300">Get Started</button>
       </div>
     </nav>
