@@ -6,6 +6,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import Particles from "react-particles";
 import { loadFull } from "tsparticles";
 import axios from 'axios';
+import {Link} from 'react-router-dom'
 
 // Popular stocks with their information and logo images
 const STOCKS = [
@@ -162,7 +163,9 @@ const MainPage = () => {
         <header className="backdrop-blur-md bg-white bg-opacity-90 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex items-center justify-between">
+              <Link to={`/`}>
               <h1 className="text-2xl font-bold text-blue-600">QUANTARA</h1>
+              </Link>
               <div className="flex items-center gap-2">
                 <FaChartLine className="text-blue-600" size={20} />
                 <span className="text-gray-700 font-medium text-sm">Monte Carlo Simulator</span>
