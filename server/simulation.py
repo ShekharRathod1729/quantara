@@ -90,4 +90,31 @@ def to_json(result):
 
     return json.dumps(output)
 
+def test_historical(ticker_symb, num_sim, t):
+    ticker = yf.Ticker(ticker_symb)
+    close_history = ticker.history(
+        start = "1900-01-01",
+        end = "2023-12-31"
+    )["Close"].to_numpy();
+    
+    drift = calc_drift(ticker_symb, t)
+    time_adj_vol = calc_time_adj_vol(ticker_symb, t)
 
+    result = np.zeros(num_sim)
+
+    for i in range(num_sim):
+        result[i] = close_history[-1] * math.exp(drift + time_adj_vol * npr.randn())
+
+    return result
+
+def data_for_testing(ticker_symb, result, confidence_level, date):
+    alpha = 100 - confidence_level
+    range_low = np.percentile(result, alpha / 2)
+    range_high = np.percentile(result, 100 - alpha / 2)
+    
+    ticker = yf.Ticker(ticker_symb)
+    next_date = (pd.to_datetime(date) + pd.Timedelta(days=1)).strftime("%Y-%m-%d")
+
+    closing_price_on_date = ticker.history(start = date, end = next_date)["Close"][date]
+
+    return closing_price_on_date, range_low, range_high
