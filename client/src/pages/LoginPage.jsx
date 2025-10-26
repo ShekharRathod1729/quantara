@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Lottie from "lottie-react";
 import Particles from "react-particles";
 import { loadFull } from "tsparticles";
 import { FaUser, FaLock, FaArrowRight, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import financialAnimation from '../assets/financial-animation.json';
-import { useNavigate } from 'react-router-dom'; // added import
+import { useNavigate } from 'react-router-dom';
 
 const LoginPage = () => {
   const [userId, setUserId] = useState('');
@@ -14,7 +14,15 @@ const LoginPage = () => {
   const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
-  const navigate = useNavigate(); // added navigate hook
+  const navigate = useNavigate();
+
+  // Check if already logged in
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    if (isLoggedIn === 'true') {
+      navigate('/single');
+    }
+  }, [navigate]);
 
   const particlesInit = async (main) => {
     await loadFull(main);
@@ -30,9 +38,14 @@ const LoginPage = () => {
       if (userId === 'jash' && password === '1234567890') {
         setSuccess(true);
         setError('');
-        // Redirect to /home after short delay
+        
+        // Set login state in localStorage
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('username', userId);
+        
+        // Redirect to simulator after short delay
         setTimeout(() => {
-          navigate('/home');
+          navigate('/single');
         }, 600);
       } else {
         setError('Invalid credentials. Please try again.');

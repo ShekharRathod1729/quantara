@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { FaChartLine, FaShieldAlt, FaChartPie, FaRobot, FaArrowRight } from 'react-icons/fa';
@@ -11,6 +11,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import Particles from "react-particles";
 import { loadFull } from "tsparticles";
 import { AnimatePresence } from "framer-motion";
+import { Link, useNavigate } from 'react-router-dom';
 
 
 // Import required CSS for react-slick
@@ -19,7 +20,6 @@ import "slick-carousel/slick/slick-theme.css";
 
 // Import financial animation
 import financialAnimation from '../assets/financial-animation.json';
-import { Link } from 'react-router-dom';
 
 // Sample data for charts
 const chartData = [
@@ -41,6 +41,11 @@ const sampleScenarios = [
 
 const LandingPage = () => {
   const [animatedBackground, setAnimatedBackground] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    setIsLoggedIn(localStorage.getItem('isLoggedIn') === 'true');
+  }, []);
 
   const particlesInit = async (main) => {
     await loadFull(main);
@@ -138,7 +143,7 @@ const LandingPage = () => {
           zIndex: -1
         }}
       />
-      <NavBar />
+      <NavBar isLoggedIn={isLoggedIn} />
       <HeroSection />
       <StatsSection />
       <FeaturesSection />
@@ -152,7 +157,15 @@ const LandingPage = () => {
   );
 };
 
-const NavBar = () => {
+const NavBar = ({ isLoggedIn }) => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('username');
+    window.location.reload();
+  };
+
   return (
     <nav className="flex justify-between items-center px-6 md:px-20 py-4 backdrop-blur-md bg-white bg-opacity-90 fixed w-full z-50 shadow-sm">
       <div className="flex items-center">
@@ -165,10 +178,34 @@ const NavBar = () => {
         <NavLink text="Pricing" />
       </div>
       <div className="flex space-x-4">
-        <Link to="/login">
-          <button className="px-4 py-2 rounded-md text-gray-800 hover:text-blue-600 transition duration-300">Login</button>
-        </Link>
-        <button className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition duration-300">Get Started</button>
+        {isLoggedIn ? (
+          <>
+            <Link to="/single">
+              <button className="px-4 py-2 rounded-md text-gray-800 hover:text-blue-600 transition duration-300">Simulator</button>
+            </Link>
+            <Link to="/multiple">
+              <button className="px-4 py-2 rounded-md text-gray-800 hover:text-blue-600 transition duration-300">Portfolio</button>
+            </Link>
+            <Link to="/testing">
+              <button className="px-4 py-2 rounded-md text-gray-800 hover:text-blue-600 transition duration-300">Testing</button>
+            </Link>
+            <button 
+              onClick={handleLogout}
+              className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 transition duration-300"
+            >
+              Logout
+            </button>
+          </>
+        ) : (
+          <>
+            <Link to="/login">
+              <button className="px-4 py-2 rounded-md text-gray-800 hover:text-blue-600 transition duration-300">Login</button>
+            </Link>
+            <Link to="/single">
+              <button className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition duration-300">Get Started</button>
+            </Link>
+          </>
+        )}
       </div>
     </nav>
   );
@@ -480,7 +517,7 @@ const HowItWorksSection = () => {
               <div key={index} className="relative z-10 text-center">
                 <button
                   onClick={() => setCurrentStep(index)}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ease-in-out ${
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
                     index <= currentStep ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-slate-500 border-2 border-slate-200'
                   }`}
                 >
