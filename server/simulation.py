@@ -92,10 +92,11 @@ def to_json(result):
 
 def test_historical(ticker_symb, num_sim, t):
     ticker = yf.Ticker(ticker_symb)
+    # Explicitly use data up to 2023-12-31 for training
     close_history = ticker.history(
-        start = "1900-01-01",
-        end = "2023-12-31"
-    )["Close"].to_numpy();
+        start="1900-01-01",
+        end="2023-12-31"
+    )["Close"].to_numpy()
     
     drift = calc_drift(ticker_symb, t)
     time_adj_vol = calc_time_adj_vol(ticker_symb, t)
