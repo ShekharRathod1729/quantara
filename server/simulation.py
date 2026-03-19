@@ -5,6 +5,7 @@ import math
 import pandas as pd
 import json
 
+
 def calc_daily_log_return(ticker_symb):
     ticker = yf.Ticker(ticker_symb)
     close_history = ticker.history(period="max")["Close"].to_numpy()

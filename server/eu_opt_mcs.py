@@ -9,10 +9,10 @@ from utils import volatility, calc_r
 T: time interval between today and maturity, in years
 num_sim: number of simulations we want to perfom
 K: strike price
-call: boolean value, true if a call option, false if a put option
+opt: takes one of two strings, "call" or "put", "call" by default
 '''
 
-def simulate(ticker_symb, T, num_sim, K, call):
+def eu_opt_mcs(ticker_symb, T, num_sim, K, opt="call"):
     ticker = yf.Ticker(ticker_symb)
     close_history = ticker.history(period="max")["Close"].to_numpy()
 
@@ -23,13 +23,14 @@ def simulate(ticker_symb, T, num_sim, K, call):
     Z = npr.randn(num_sim)
 
     S_T = S0 * np.exp((r - 0.5 * sigma ** 2) * T + sigma * np.sqrt(T) * Z)
+    payoff = 0
 
     # call option
-    if call:
+    if opt == "call":
         payoff = np.maximum(S_T - K, 0)
 
     # put option
-    else:
+    if opt == "put":
         payoff = np.maximum(K - S_T, 0)
 
     # discounting
@@ -37,6 +38,10 @@ def simulate(ticker_symb, T, num_sim, K, call):
 
     return price, payoff
 
+
+'''
+    Converting output to JSON
+'''
 
 def to_json(payoff, price):
     mean = float(np.mean(payoff))

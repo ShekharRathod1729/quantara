@@ -1,42 +1,8 @@
 import numpy as np
 import yfinance as yf
 from utils import volatility, calc_r
-
-
-'''
-Calculating the risk-neutral probability p
-r: risk-free rate
-dt: length of each time step (in years)
-u: calculated by calc_u
-'''
-
-def calc_p(r, dt, u):
-    d = 1 / u
-    return (np.exp(r * dt) - d) / (u - d)
-
-
-'''
-Calculating the binomial tree for simulating stock prices.
-S0: current stock price
-u: calculated by calc_u
-N: number of periods
-'''
-
-def stock_bt(S0, u, N):
-    d = 1 / u
-    S = np.zeros((N + 1, N + 1))
-    S[0, 0] = S0
-
-    for i in range(0, N + 1):
-        for t in range(i, N + 1):
-            if i == t == 0:
-                continue
-            if i == t:
-                S[i, t] = d * S[i - 1, t - 1]
-            else:
-                S[i, t] = u * S[i, t - 1]
-
-    return S
+import utils_bt
+import json
 
 
 '''
@@ -80,7 +46,7 @@ T: time (in years) till maturity
 N: number of periods
 '''
 
-def price_am_put(ticker_symb, K, T, N):
+def am_put_bt(ticker_symb, K, T, N):
     ticker = yf.Ticker(ticker_symb)
 
     sigma = volatility(ticker)
@@ -90,11 +56,24 @@ def price_am_put(ticker_symb, K, T, N):
     S0 = ticker.history(period="5d")["Close"].iloc[-1]
     u = np.exp(sigma * np.sqrt(dt))
 
-    S = stock_bt(S0, u, N)  # stock binomial tree
+    S = utils_bt.stock_bt(S0, u, N)  # stock binomial tree
 
-    p = calc_p(r, dt, u)
+    p = utils_bt.calc_p(r, dt, u)
     df = np.exp(-r * dt)
 
-    O = option_bt(S, K, p, df)[0]
+    O, early_optimal = option_bt(S, K, p, df)
 
-    return O
+    return S, O, early_optimal
+
+
+'''
+Converting data to JSON
+'''
+
+def to_json(S, O, early_optimal):
+    output = {
+        "stock_bt": S.tolist(),
+        "opt_bt": O.tolist(),
+        "early_optimal": early_optimal.tolist()
+    }
+    return json.dumps(output)
