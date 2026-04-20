@@ -6,6 +6,8 @@ import LoginPage from './pages/LoginPage.jsx';
 import MainPage from './pages/MainPage.jsx';
 import MultipleStocks from './pages/MultipleStocks.jsx';
 import Testing from './pages/Testing.jsx';
+import EuropeanOptions from './pages/EuropeanOptions.jsx';
+import AmericanOptions from './pages/AmericanOptions.jsx';
 
 
 
@@ -21,6 +23,8 @@ function App() {
           <Route path="/single" element={<MainPage />} />
           <Route path="/multiple" element={<MultipleStocks />} />
           <Route path="/testing" element={<Testing />} />
+          <Route path="/european" element={<EuropeanOptions />} />
+          <Route path="/american" element={<AmericanOptions />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>

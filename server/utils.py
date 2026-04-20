@@ -1,6 +1,5 @@
 import numpy as np
-import pandas_datareader.data as web
-import datetime as dt
+import yfinance as yf
 
 
 '''
@@ -36,25 +35,21 @@ This function takes T, the time interval between today and maturity, in years.
 '''
 
 def calc_r(T):
-    start = dt.datetime(2026, 1,
-                        1)  # start date, irrelevant here but required as an argument in the DataReader function
-    end = dt.datetime.today()
-    r_y = 0
-
-    # 3 month horizon, use 3-month T-bill
+    # Use Yahoo Finance treasury indices to avoid FRED dependency/timeouts.
+    # ^IRX ~= 13-week bill, ^FVX ~= 5-year note, ^TNX ~= 10-year note.
     if T <= 0.25:
-        r_y = web.DataReader("DTB3", "fred", start, end).iloc[
-                  -1, 0] / 100  # rates are returned in percentage and so division by 100
-
-    # 3 to 9 month horizon, use 6-month T-bill
-    elif T <= 0.5:
-        r_y = web.DataReader("DTB6", "fred", start, end).iloc[-1, 0] / 100
-
-    # for longer time horizons, use 1-year T-bill
+        ticker = "^IRX"
+    elif T <= 1.0:
+        ticker = "^FVX"
     else:
-        r_y = web.DataReader("DTB1YR", "fred", start, end).iloc[-1, 0] / 100
+        ticker = "^TNX"
 
-    r = np.log(1 + r_y)  # this is the annual riskless rate
+    try:
+        data = yf.Ticker(ticker).history(period="5d")
+        r_y = float(data["Close"].dropna().iloc[-1]) / 100.0
+    except Exception:
+        # Conservative fallback to keep pricing APIs available when data source is unavailable.
+        r_y = 0.043
 
-    return r
+    return float(np.log(1 + r_y))
 

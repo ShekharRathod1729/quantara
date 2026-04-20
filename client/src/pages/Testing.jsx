@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaChartLine, FaRocket, FaCalendar, FaArrowLeft, FaCheckCircle, FaTimesCircle, FaBalanceScale, FaSignOutAlt } from 'react-icons/fa';
+import { FaChartLine, FaRocket, FaCalendar, FaArrowLeft, FaCheckCircle, FaTimesCircle, FaBalanceScale, FaSignOutAlt, FaDollarSign, FaFlag } from 'react-icons/fa';
 import { BiTrendingUp } from 'react-icons/bi';
+import StockSelector from '../components/StockSelector';
+import StockLogo from '../components/StockLogo';
 import { MdHistory } from 'react-icons/md';
 import Particles from "react-particles";
 import { loadFull } from "tsparticles";
@@ -10,31 +12,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
-const STOCKS = [
-  { symbol: 'AAPL', name: 'Apple Inc.', logoUrl: 'https://logo.clearbit.com/apple.com', bgColor: 'bg-gray-100' },
-  { symbol: 'GOOGL', name: 'Alphabet Inc.', logoUrl: 'https://cdn1.iconfinder.com/data/icons/google-s-logo/150/Google_Icons-09-512.png', bgColor: 'bg-blue-100' },
-  { symbol: 'MSFT', name: 'Microsoft Corp.', logoUrl: 'https://logo.clearbit.com/microsoft.com', bgColor: 'bg-sky-100' },
-  { symbol: 'AMZN', name: 'Amazon.com Inc.', logoUrl: 'https://logo.clearbit.com/amazon.com', bgColor: 'bg-orange-100' },
-  { symbol: 'TSLA', name: 'Tesla Inc.', logoUrl: 'https://logo.clearbit.com/tesla.com', bgColor: 'bg-red-100' },
-  { symbol: 'META', name: 'Meta Platforms', logoUrl: 'https://logo.clearbit.com/meta.com', bgColor: 'bg-blue-100' },
-  { symbol: 'NVDA', name: 'NVIDIA Corp.', logoUrl: 'https://logo.clearbit.com/nvidia.com', bgColor: 'bg-green-100' },
-  { symbol: 'JPM', name: 'JPMorgan Chase', logoUrl: 'https://logo.clearbit.com/jpmorganchase.com', bgColor: 'bg-indigo-100' },
-  { symbol: 'V', name: 'Visa Inc.', logoUrl: 'https://logo.clearbit.com/visa.com', bgColor: 'bg-blue-100' },
-  { symbol: 'WMT', name: 'Walmart Inc.', logoUrl: 'https://logo.clearbit.com/walmart.com', bgColor: 'bg-yellow-100' },
-  { symbol: 'DIS', name: 'Walt Disney Co.', logoUrl: 'https://logo.clearbit.com/disney.com', bgColor: 'bg-blue-100' },
-  { symbol: 'NFLX', name: 'Netflix Inc.', logoUrl: 'https://logo.clearbit.com/netflix.com', bgColor: 'bg-red-100' },
-  { symbol: 'INTC', name: 'Intel Corp.', logoUrl: 'https://logo.clearbit.com/intel.com', bgColor: 'bg-blue-100' },
-  { symbol: 'AMD', name: 'AMD Inc.', logoUrl: 'https://logo.clearbit.com/amd.com', bgColor: 'bg-green-100' },
-  { symbol: 'PYPL', name: 'PayPal Holdings', logoUrl: 'https://logo.clearbit.com/paypal.com', bgColor: 'bg-blue-100' },
-  { symbol: 'CSCO', name: 'Cisco Systems', logoUrl: 'https://logo.clearbit.com/cisco.com', bgColor: 'bg-blue-100' },
-  { symbol: 'BA', name: 'Boeing Co.', logoUrl: 'https://logo.clearbit.com/boeing.com', bgColor: 'bg-blue-100' },
-  { symbol: 'NKE', name: 'Nike Inc.', logoUrl: 'https://logo.clearbit.com/nike.com', bgColor: 'bg-orange-100' },
-  { symbol: 'CRM', name: 'Salesforce Inc.', logoUrl: 'https://logo.clearbit.com/salesforce.com', bgColor: 'bg-blue-100' },
-  { symbol: 'ADBE', name: 'Adobe Inc.', logoUrl: 'https://logo.clearbit.com/adobe.com', bgColor: 'bg-red-100' },
-  { symbol: 'ORCL', name: 'Oracle Corp.', logoUrl: 'https://logo.clearbit.com/oracle.com', bgColor: 'bg-red-100' },
-  { symbol: 'PEP', name: 'PepsiCo Inc.', logoUrl: 'https://logo.clearbit.com/pepsi.com', bgColor: 'bg-blue-100' },
-  { symbol: 'KO', name: 'Coca-Cola Co.', logoUrl: 'https://logo.clearbit.com/coca-cola.com', bgColor: 'bg-red-100' },
-];
 
 const SIMULATION_COUNTS = [100, 1000, 5000, 10000, 20000, 50000, 100000];
 
@@ -206,6 +183,26 @@ const Testing = () => {
                     <span>Portfolio</span>
                   </motion.button>
                 </Link>
+                <Link to="/european">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm shadow-sm"
+                  >
+                    <FaDollarSign size={16} />
+                    <span>European</span>
+                  </motion.button>
+                </Link>
+                <Link to="/american">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm shadow-sm"
+                  >
+                    <FaFlag size={16} />
+                    <span>American Put</span>
+                  </motion.button>
+                </Link>
                 <motion.button
                   onClick={handleLogout}
                   whileHover={{ scale: 1.05 }}
@@ -275,40 +272,7 @@ const SelectionScreen = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1 overflow-hidden">
         {/* Stock Selection */}
         <div className="lg:col-span-3">
-          <h2 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
-            <BiTrendingUp className="text-blue-600" size={20} />
-            Select Stock
-          </h2>
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-gray-100">
-            {STOCKS.map((stock) => (
-              <motion.button
-                key={stock.symbol}
-                onClick={() => setSelectedStock(stock)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={`flex-shrink-0 p-3 rounded-xl border-2 transition-all duration-200 ${
-                  selectedStock?.symbol === stock.symbol
-                    ? 'border-blue-600 bg-blue-50 shadow-md'
-                    : 'border-gray-200 bg-white hover:border-blue-300'
-                }`}
-              >
-                <div className="flex flex-col items-center gap-1 w-16">
-                  <div className="w-10 h-10 flex items-center justify-center p-1 overflow-hidden">
-                    <img 
-                      src={stock.logoUrl} 
-                      alt={stock.symbol}
-                      className="w-full h-full object-contain"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.parentElement.innerHTML = `<span class="text-lg font-bold text-gray-700">${stock.symbol.charAt(0)}</span>`;
-                      }}
-                    />
-                  </div>
-                  <span className="text-xs font-bold text-gray-900 truncate w-full text-center">{stock.symbol}</span>
-                </div>
-              </motion.button>
-            ))}
-          </div>
+          <StockSelector selected={selectedStock} onSelect={setSelectedStock} />
         </div>
 
         {/* Date Selection */}
@@ -481,11 +445,7 @@ const ResultsScreen = ({
       <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-4 flex-1 flex flex-col">
         <div className="text-center mb-4">
           <div className="flex items-center justify-center gap-3 mb-3">
-            <img 
-              src={selectedStock.logoUrl} 
-              alt={selectedStock.symbol}
-              className="w-12 h-12 object-contain"
-            />
+            <StockLogo symbol={selectedStock.symbol} logoUrl={selectedStock.logoUrl} size="w-12 h-12" />
             <div>
               <h2 className="text-2xl font-bold text-gray-900">{selectedStock.symbol}</h2>
               <p className="text-sm text-gray-600">{selectedStock.name}</p>
