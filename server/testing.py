@@ -25,50 +25,6 @@ def calc_time_adj_vol(ticker_symb, t):
 
     return time_adj_vol
 
-def simulate(ticker_symb, num_sim, t):
-    ticker = yf.Ticker(ticker_symb)
-    close_history = ticker.history(period="max")["Close"].to_numpy()
-    
-    drift = calc_drift(ticker_symb, t)
-    time_adj_vol = calc_time_adj_vol(ticker_symb, t)
-
-    result = np.zeros(num_sim)
-
-    for i in range(num_sim):
-        result[i] = close_history[-1] * math.exp(drift + time_adj_vol * npr.randn())
-
-    return result
-
-def simulate_multiple(stocks, weights, num_sim, t):
-    weights = np.array(weights)
-    
-    num_stocks = len(stocks)
-    tickers = [yf.Ticker(ticker) for ticker in stocks]
-    
-    close_dfs = [yf.Ticker(t).history(period="max")[["Close"]].rename(columns={"Close": t}) for t in stocks]
-    all_close = pd.concat(close_dfs, axis=1)
-    aligned_close = all_close.dropna()
-    
-    close_history_mat = aligned_close.to_numpy()
-    prices_today = close_history_mat[-1, :]
-    
-    daily_ret = np.log(close_history_mat[1:] / close_history_mat[:-1])
-    
-    cov_matrix = np.cov(daily_ret.T)
-
-    drifts = np.array([calc_drift(ticker, t) for ticker in stocks])
-    time_adj_vols = np.array([calc_time_adj_vol(ticker, t) for ticker in stocks])
-    
-    result = np.zeros(num_sim)
-    
-    for i in range(num_sim):
-        Z = np.random.multivariate_normal(mean=np.zeros(num_stocks), cov=cov_matrix)
-        projected_vals_adj = weights * prices_today * np.exp(drifts + time_adj_vols * Z)
-        proj_portfolio_val = projected_vals_adj.sum()
-        result[i] = proj_portfolio_val
-
-    return result    
-
 def to_json(result):
     mean = float(np.mean(result))
     median = float(np.median(result))
