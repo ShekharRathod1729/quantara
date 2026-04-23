@@ -1,29 +1,61 @@
 import yfinance as yf
 import numpy as np
-import numpy.random as npr
-import math
 import pandas as pd
-import json
 
 
-def calc_daily_log_return(ticker_symb):
-    ticker = yf.Ticker(ticker_symb)
-    close_history = ticker.history(period="max")["Close"].to_numpy()
-    daily_log_return = np.log(close_history[1:]/close_history[:-1])
+'''
+    Testing simulated prices against the actual stock price
+    
+    ticker: string representing ticker symbol of stock ("AAPL")
+    start: starting date as a string in the format "2025-01-01" ("yyyy-mm-dd")
+    end: ending date as a string in the format "2025-02-01"
+    num_sim: number of simulations
 
-    return daily_log_return
+    This function returns an ndarray exp_terminal, which are simulated terminal prices on end date,
+    calculated using start date as the initial point.
+    It also returns actual_terminal, which is the real-world stock price on the end date. 
+'''
 
-def calc_drift(ticker_symb, t):
-    daily_log_ret = calc_daily_log_return(ticker_symb)    
-    drift = t * (daily_log_ret.mean() - daily_log_ret.var() / 2)
+def test_stock(ticker, start, end, num_sim):
+    
+    history = yf.Ticker(ticker).history(period="10y")["Close"]
+    
+    start_ts = pd.Timestamp(start, tz='America/New_York')
+    end_ts = pd.Timestamp(end, tz='America/New_York')
 
-    return drift
+    start_ts = history.index[history.index >= start_ts][0]
+    end_ts = history.index[history.index <= end_ts][-1]
+    
+    S0 = history.loc[start_ts]
+    actual_terminal = history.loc[end_ts]
+    
+    T = np.busday_count(start, end) / 252
+    
+    data_start = start_ts - pd.DateOffset(years=2)
 
-def calc_time_adj_vol(ticker_symb, t):
-    daily_log_ret = calc_daily_log_return(ticker_symb)
-    time_adj_vol = np.sqrt(t) * np.std(daily_log_ret)
+    data_start = history.index[history.index >= data_start][0]
 
-    return time_adj_vol
+    data = history.loc[data_start:start_ts].to_numpy()
+    ret = np.log(data[1:] / data[:-1])
+
+    mu = np.mean(ret) * 252
+    sigma = np.std(ret) * np.sqrt(252)
+
+    exp_terminal = S0 * np.exp((mu - 0.5 * sigma * sigma) * T + sigma * np.sqrt(T) * np.random.randn(num_sim))
+
+    return actual_terminal, exp_terminal
+
+
+
+'''
+    exp_terminal: the ndarray returned by test_stock
+'''
+def data_for_testing(exp_terminal, confidence_level):
+    alpha = 100 - confidence_level
+    range_low = np.percentile(exp_terminal, alpha / 2)
+    range_high = np.percentile(exp_terminal, 100 - alpha / 2)
+
+    return range_low, range_high
 
 def to_json(result):
     mean = float(np.mean(result))
@@ -47,32 +79,4 @@ def to_json(result):
 
     return json.dumps(output)
 
-def test_historical(ticker_symb, num_sim, t):
-    ticker = yf.Ticker(ticker_symb)
-    # Explicitly use data up to 2023-12-31 for training
-    close_history = ticker.history(
-        start="1900-01-01",
-        end="2023-12-31"
-    )["Close"].to_numpy()
-    
-    drift = calc_drift(ticker_symb, t)
-    time_adj_vol = calc_time_adj_vol(ticker_symb, t)
 
-    result = np.zeros(num_sim)
-
-    for i in range(num_sim):
-        result[i] = close_history[-1] * math.exp(drift + time_adj_vol * npr.randn())
-
-    return result
-
-def data_for_testing(ticker_symb, result, confidence_level, date):
-    alpha = 100 - confidence_level
-    range_low = np.percentile(result, alpha / 2)
-    range_high = np.percentile(result, 100 - alpha / 2)
-    
-    ticker = yf.Ticker(ticker_symb)
-    next_date = (pd.to_datetime(date) + pd.Timedelta(days=1)).strftime("%Y-%m-%d")
-
-    closing_price_on_date = ticker.history(start = date, end = next_date)["Close"][date]
-
-    return closing_price_on_date, range_low, range_high
