@@ -20,7 +20,7 @@ const LoginPage = () => {
   useEffect(() => {
     const isLoggedIn = localStorage.getItem('isLoggedIn');
     if (isLoggedIn === 'true') {
-      navigate('/single');
+      navigate('/simulate');
     }
   }, [navigate]);
 
@@ -45,7 +45,7 @@ const LoginPage = () => {
         
         // Redirect to simulator after short delay
         setTimeout(() => {
-          navigate('/single');
+          navigate('/simulate');
         }, 600);
       } else {
         setError('Invalid credentials. Please try again.');

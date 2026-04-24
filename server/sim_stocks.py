@@ -112,13 +112,13 @@ def to_json(paths):
     metrics = {
     "mean": mean,
     "median": median,
-    "std_dev": std_dev,
-    "min_val": min_val, 
+    "std_dev": std,
+    "min_val": min_val,
     "max_val": max_val
     }
-    
+
     output = {
-        "paths": paths.tolist(),
+        "paths": paths[:, :30].tolist(),
         "terminal": terminal.tolist(),
         "metrics": metrics
     }

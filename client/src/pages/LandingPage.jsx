@@ -180,16 +180,16 @@ const NavBar = ({ isLoggedIn }) => {
       <div className="flex space-x-4">
         {isLoggedIn ? (
           <>
-            <Link to="/single">
+            <Link to="/simulate">
               <button className="px-4 py-2 rounded-md text-gray-800 hover:text-blue-600 transition duration-300">Simulator</button>
             </Link>
-            <Link to="/multiple">
-              <button className="px-4 py-2 rounded-md text-gray-800 hover:text-blue-600 transition duration-300">Portfolio</button>
+            <Link to="/options">
+              <button className="px-4 py-2 rounded-md text-gray-800 hover:text-blue-600 transition duration-300">Option Pricing</button>
             </Link>
             <Link to="/testing">
               <button className="px-4 py-2 rounded-md text-gray-800 hover:text-blue-600 transition duration-300">Testing</button>
             </Link>
-            <button 
+            <button
               onClick={handleLogout}
               className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 transition duration-300"
             >
@@ -201,7 +201,7 @@ const NavBar = ({ isLoggedIn }) => {
             <Link to="/login">
               <button className="px-4 py-2 rounded-md text-gray-800 hover:text-blue-600 transition duration-300">Login</button>
             </Link>
-            <Link to="/single">
+            <Link to="/simulate">
               <button className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition duration-300">Get Started</button>
             </Link>
           </>

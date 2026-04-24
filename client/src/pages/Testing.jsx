@@ -163,7 +163,7 @@ const Testing = () => {
                 <h1 className="text-2xl font-bold text-blue-600 cursor-pointer hover:text-blue-700 transition-colors">QUANTARA</h1>
               </Link>
               <div className="flex items-center gap-4">
-                <Link to="/single">
+                <Link to="/simulate">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -173,34 +173,14 @@ const Testing = () => {
                     <span>Simulator</span>
                   </motion.button>
                 </Link>
-                <Link to="/multiple">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm shadow-sm"
-                  >
-                    <FaBalanceScale size={16} />
-                    <span>Portfolio</span>
-                  </motion.button>
-                </Link>
-                <Link to="/european">
+                <Link to="/options">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm shadow-sm"
                   >
                     <FaDollarSign size={16} />
-                    <span>European</span>
-                  </motion.button>
-                </Link>
-                <Link to="/american">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm shadow-sm"
-                  >
-                    <FaFlag size={16} />
-                    <span>American Put</span>
+                    <span>Option Pricing</span>
                   </motion.button>
                 </Link>
                 <motion.button

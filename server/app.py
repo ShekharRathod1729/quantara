@@ -48,7 +48,8 @@ _pd_dec.deprecate_kwarg = _patched_dk
 # ============================================================
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from simulation import simulate, to_json, simulate_multiple, test_historical, data_for_testing
+from sim_stocks import simulate, to_json
+from testing import test_stock, data_for_testing
 from eu_opt_mcs import eu_opt_mcs, to_json as eu_mcs_to_json
 from eu_opt_bt import eu_opt_bt, to_json as eu_bt_to_json
 from am_put_bt import am_put_bt
@@ -105,10 +106,12 @@ def home():
 def run_simulation():
     ticker = request.args.get("ticker", "AAPL")
     num_sim = int(request.args.get("num_sim", 1000))
-    t = float(request.args.get("t", 1.0))
+    t = int(request.args.get("t", 30))  # days
+    T = t / 252.0
+    N = max(1, t)
 
     try:
-        result = simulate(ticker, num_sim, t)
+        result = simulate([ticker], T, [1.0], num_sim, N)
         return app.response_class(
             response=to_json(result),
             status=200,
@@ -117,16 +120,48 @@ def run_simulation():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# New: portfolio simulation (POST JSON)
+
+@app.route("/simul/stocks", methods=["POST"])
+def run_stocks_simulation():
+    """
+    Unified endpoint for single- and multi-stock simulation.
+    Expects JSON:
+    {
+      "tickers": ["AAPL"],
+      "weights": [1.0],
+      "num_sim": 1000,
+      "t": 30
+    }
+    """
+    try:
+        payload = request.get_json(force=True)
+        tickers = payload.get("tickers")
+        weights = payload.get("weights")
+        num_sim = int(payload.get("num_sim", 1000))
+        t = int(payload.get("t", 30))  # days
+
+        if not tickers or not weights or len(tickers) != len(weights):
+            return jsonify({"error": "tickers and weights required and must have same length"}), 400
+
+        T = t / 252.0
+        N = max(1, t)
+
+        result = simulate(tickers, T, weights, num_sim, N)
+        return app.response_class(response=to_json(result), status=200, mimetype="application/json")
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/simul/portfolio", methods=["POST"])
 def run_portfolio_simulation():
     """
+    Legacy portfolio simulation endpoint.
     Expects JSON:
     {
       "stocks": ["AAPL","MSFT"],
       "weights": [0.6,0.4],
       "num_sim": 1000,
-      "t": 1.0
+      "t": 30
     }
     """
     try:
@@ -134,12 +169,15 @@ def run_portfolio_simulation():
         stocks = payload.get("stocks")
         weights = payload.get("weights")
         num_sim = int(payload.get("num_sim", 1000))
-        t = float(payload.get("t", 1.0))
+        t = int(payload.get("t", 30))  # days
 
         if not stocks or not weights or len(stocks) != len(weights):
             return jsonify({"error": "stocks and weights required and must have same length"}), 400
 
-        result = simulate_multiple(stocks, weights, num_sim, t)
+        T = t / 252.0
+        N = max(1, t)
+
+        result = simulate(stocks, T, weights, num_sim, N)
         return app.response_class(response=to_json(result), status=200, mimetype="application/json")
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -198,23 +236,18 @@ def historical_test():
         if business_days <= 0:
             return jsonify({"error": "Selected date must be a US business day after 2023-12-31"}), 400
 
-        t = float(business_days)
-
-        # Run simulation based on historical data up to 2023-12-31
-        result = test_historical(ticker, num_sim, t)
-
-        # Get actual closing price and confidence interval
-        close_on_date, range_low, range_high = data_for_testing(ticker, result, confidence, date)
+        actual_price, exp_terminal = test_stock(ticker, "2023-12-31", date, num_sim)
+        range_low, range_high = data_for_testing(exp_terminal, confidence)
 
         return jsonify({
             "ticker": ticker,
             "date": date,
             "business_days": business_days,
-            "actual_price": round(float(close_on_date), 2),
+            "actual_price": round(float(actual_price), 2),
             "confidence_level": confidence,
             "range_low": round(float(range_low), 2),
             "range_high": round(float(range_high), 2),
-            "within_range": float(range_low) <= float(close_on_date) <= float(range_high)
+            "within_range": float(range_low) <= float(actual_price) <= float(range_high)
         }), 200
     except KeyError as ke:
         return jsonify({"error": f"No data available for {date}. Ensure it's a US business day."}), 404

@@ -3,28 +3,25 @@ import './App.css'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from './pages/LandingPage.jsx'
 import LoginPage from './pages/LoginPage.jsx';
-import MainPage from './pages/MainPage.jsx';
-import MultipleStocks from './pages/MultipleStocks.jsx';
+import SimulateStocks from './pages/SimulateStocks.jsx';
+import OptionPricing from './pages/OptionPricing.jsx';
 import Testing from './pages/Testing.jsx';
-import EuropeanOptions from './pages/EuropeanOptions.jsx';
-import AmericanOptions from './pages/AmericanOptions.jsx';
-
-
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <>
       <Router>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/single" element={<MainPage />} />
-          <Route path="/multiple" element={<MultipleStocks />} />
+          <Route path="/simulate" element={<SimulateStocks />} />
+          <Route path="/options" element={<OptionPricing />} />
           <Route path="/testing" element={<Testing />} />
-          <Route path="/european" element={<EuropeanOptions />} />
-          <Route path="/american" element={<AmericanOptions />} />
+          {/* Legacy redirects */}
+          <Route path="/single" element={<Navigate to="/simulate" replace />} />
+          <Route path="/multiple" element={<Navigate to="/simulate" replace />} />
+          <Route path="/european" element={<Navigate to="/options" replace />} />
+          <Route path="/american" element={<Navigate to="/options" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
