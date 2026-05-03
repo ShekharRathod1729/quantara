@@ -18,20 +18,20 @@ import json
 '''
 
 def test_stock(ticker, start, end, num_sim):
-    
+
     history = yf.Ticker(ticker).history(period="10y")["Close"]
-    
+
     start_ts = pd.Timestamp(start, tz='America/New_York')
     end_ts = pd.Timestamp(end, tz='America/New_York')
 
     start_ts = history.index[history.index >= start_ts][0]
     end_ts = history.index[history.index <= end_ts][-1]
-    
+
     S0 = history.loc[start_ts]
     actual_terminal = history.loc[end_ts]
-    
+
     T = np.busday_count(start, end) / 252
-    
+
     data_start = start_ts - pd.DateOffset(years=2)
 
     data_start = history.index[history.index >= data_start][0]
@@ -44,7 +44,7 @@ def test_stock(ticker, start, end, num_sim):
 
     exp_terminal = S0 * np.exp((mu - 0.5 * sigma * sigma) * T + sigma * np.sqrt(T) * np.random.randn(num_sim))
 
-    return actual_terminal, exp_terminal
+    return float(S0), actual_terminal, exp_terminal
 
 
 

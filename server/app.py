@@ -210,47 +210,51 @@ def get_historical():
 def historical_test():
     """
     Query params:
-      ticker (required), date (YYYY-MM-DD, must be after 2023-12-31 and a US business day),
-      num_sim (default 1000), confidence (default 95)
-    Returns: closing price on date and confidence interval from simulation.
+      ticker (required)
+      start_date (YYYY-MM-DD, required) — simulation starting point
+      end_date   (YYYY-MM-DD, required) — target date to predict
+      num_sim    (default 1000)
+      confidence (default 95)
+    Returns: start price, actual end price, and confidence interval.
     """
     ticker = request.args.get("ticker")
-    date = request.args.get("date")
-    if not ticker or not date:
-        return jsonify({"error": "ticker and date required"}), 400
+    start_date = request.args.get("start_date")
+    end_date = request.args.get("end_date")
+    if not ticker or not start_date or not end_date:
+        return jsonify({"error": "ticker, start_date, and end_date are required"}), 400
 
     num_sim = int(request.args.get("num_sim", 1000))
     confidence = float(request.args.get("confidence", 95.0))
 
     try:
-        cutoff_date = pd.Timestamp("2023-12-31")
-        target_date = pd.Timestamp(date)
+        start_ts = pd.Timestamp(start_date)
+        end_ts = pd.Timestamp(end_date)
 
-        # Validate date is after cutoff
-        if target_date <= cutoff_date:
-            return jsonify({"error": "Date must be after 2023-12-31"}), 400
+        if end_ts <= start_ts:
+            return jsonify({"error": "end_date must be after start_date"}), 400
 
-        # Calculate number of business days between cutoff and target date
-        business_days = len(pd.bdate_range(start=cutoff_date, end=target_date)) - 1
-
+        business_days = len(pd.bdate_range(start=start_ts, end=end_ts)) - 1
         if business_days <= 0:
-            return jsonify({"error": "Selected date must be a US business day after 2023-12-31"}), 400
+            return jsonify({"error": "start_date and end_date must both be US business days with at least one business day between them"}), 400
 
-        actual_price, exp_terminal = test_stock(ticker, "2023-12-31", date, num_sim)
+        start_price, actual_price, exp_terminal = test_stock(ticker, start_date, end_date, num_sim)
         range_low, range_high = data_for_testing(exp_terminal, confidence)
 
         return jsonify({
             "ticker": ticker,
-            "date": date,
+            "start_date": start_date,
+            "end_date": end_date,
             "business_days": business_days,
+            "start_price": round(start_price, 2),
             "actual_price": round(float(actual_price), 2),
             "confidence_level": confidence,
             "range_low": round(float(range_low), 2),
             "range_high": round(float(range_high), 2),
-            "within_range": float(range_low) <= float(actual_price) <= float(range_high)
+            "within_range": float(range_low) <= float(actual_price) <= float(range_high),
+            "simulated_mean": round(float(np.mean(exp_terminal)), 2),
         }), 200
-    except KeyError as ke:
-        return jsonify({"error": f"No data available for {date}. Ensure it's a US business day."}), 404
+    except KeyError:
+        return jsonify({"error": f"No data available for the selected dates. Ensure both are US business days."}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
